@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payback Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* 优化移动端滑动条体验 */
+        input[type="range"] { accent-color: #2563eb; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen py-6 px-4 md:px-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-blue-600 text-white px-6 py-4">
+            <h1 class="text-xl font-bold tracking-wide">Payback Calculator</h1>
+            <p class="text-xs text-blue-100 mt-1">For APP and PC</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+            <div class="p-6 space-y-5">
+                <h2 class="text-lg font-semibold text-gray-700 border-b pb-2">Input</h2>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Product Model</label>
+                    <select id="productModel" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"></select>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-1">
+                        <span>Daily foot traffic</span>
+                        <span id="v_dailyTraffic" class="text-blue-600 font-bold">210</span>
+                    </div>
+                    <input type="range" id="dailyTraffic" min="0" max="500" value="210" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-1">
+                        <span>Traffic conversion rate</span>
+                        <span id="v_conversionRate" class="text-blue-600 font-bold">6%</span>
+                    </div>
+                    <input type="range" id="conversionRate" min="0" max="15" step="0.1" value="6" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-1">
+                        <span>Average item price ($)</span>
+                        <span id="v_itemPrice" class="text-blue-600 font-bold">$3</span>
+                    </div>
+                    <input type="range" id="itemPrice" min="0" max="15" step="0.5" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-1">
+                        <span>Items per order</span>
+                        <span id="v_itemsPerOrder" class="text-blue-600 font-bold">2</span>
+                    </div>
+                    <input type="range" id="itemsPerOrder" min="0" max="3" step="1" value="2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-1">
+                        <span>Profit margin</span>
+                        <span id="v_profitMargin" class="text-blue-600 font-bold">60%</span>
+                    </div>
+                    <input type="range" id="profitMargin" min="0" max="120" step="1" value="60" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50/50 space-y-6 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Conclusion</h2>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                            <span class="block text-xs text-gray-400 font-medium uppercase">Product Price</span>
+                            <span id="displayPrice" class="text-lg font-bold text-gray-700">$-</span>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                            <span class="block text-xs text-gray-400 font-medium uppercase">Device of Units</span>
+                            <span id="displayUnits" class="text-lg font-bold text-gray-700">-</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                            <span class="block text-sm font-medium text-blue-600">Gross Revenue (月毛利/营业额)</span>
+                            <span id="resGrossRevenue" class="text-2xl font-black text-blue-700">$0.00</span>
+                        </div>
+
+                        <div class="bg-green-50 border border-green-100 p-4 rounded-xl">
+                            <span class="block text-sm font-medium text-green-600">Payback Period (回本周期/月)</span>
+                            <span id="resPayback" class="text-3xl font-black text-green-700">0.00 月</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs text-gray-400 bg-white p-3 rounded-lg border border-gray-200">
+                    <strong>公式备忘：</strong><br>
+                    • Gross revenue = Traffic * Conversion * (Price / 100) * Items<br>
+                    • Payback = (Prod Price * Units) / (Gross revenue * Margin / 100)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 【管理员后台档案维护区】
+        //  如有新机型或价格变动，只需修改或增加以下键值对即可
+        // ==========================================
+        const productDatabase = {
+            "Mini 360": { price: 2999, units: 2 },
+            "Pluss 440":  { price: 3499, units: 2 },
+            "Pro 542": { price: 4499, units: 2 },
+            "Freezer 550": { price: 4999,  units: 2 }
+            "Max 620": { price: 4699, units: 2 },
+            "Max 620S": { price: 5499,  units: 2 }
+            "Ultra 1200":  { price: 6999, units: 2 },
+        };
+        const defaultProduct = "Mini 360";
+        // ==========================================
+
+        // 初始化下拉框
+        const modelSelect = document.getElementById('productModel');
+        Object.keys(productDatabase).forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            if(model === defaultProduct) option.selected = true;
+            modelSelect.appendChild(option);
+        });
+
+        // 获取DOM元素
+        const inputs = ['dailyTraffic', 'conversionRate', 'itemPrice', 'itemsPerOrder', 'profitMargin'];
+        const elements = {};
+        inputs.forEach(id => elements[id] = document.getElementById(id));
+
+        // 联动更新显示数值
+        function updateLabels() {
+            document.getElementById('v_dailyTraffic').textContent = elements.dailyTraffic.value;
+            document.getElementById('v_conversionRate').textContent = elements.conversionRate.value + '%';
+            document.getElementById('v_itemPrice').textContent = '$' + elements.itemPrice.value;
+            document.getElementById('v_itemsPerOrder').textContent = elements.itemsPerOrder.value;
+            document.getElementById('v_profitMargin').textContent = elements.profitMargin.value + '%';
+        }
+
+        // 核心计算逻辑
+        function calculate() {
+            updateLabels();
+
+            // 获取当前型号档案数据
+            const currentModel = modelSelect.value;
+            const productPrice = productDatabase[currentModel].price;
+            const deviceUnits = productDatabase[currentModel].units;
+
+            // 更新档案联动看板
+            document.getElementById('displayPrice').textContent = '$' + productPrice.toLocaleString();
+            document.getElementById('displayUnits').textContent = deviceUnits;
+
+            // 获取前台销售输入值
+            const traffic = parseFloat(elements.dailyTraffic.value);
+            const conversion = parseFloat(elements.conversionRate.value); 
+            const itemPrice = parseFloat(elements.itemPrice.value);
+            const itemsPerOrder = parseFloat(elements.itemsPerOrder.value);
+            const margin = parseFloat(elements.profitMargin.value);
+
+            // 1. 计算 Gross Revenue
+            // 公式: Daily foot traffic * Traffic conversion rate * Average item price / 100 * Items per order
+            const grossRevenue = traffic * conversion * (itemPrice / 100) * itemsPerOrder;
+            document.getElementById('resGrossRevenue').textContent = '$' + grossRevenue.toFixed(2);
+
+            // 2. 计算 Payback
+            // 公式: Product Price * Device of Units / (Gross revenue * Profit margin / 100)
+            const denominator = grossRevenue * (margin / 100);
+
+            if (denominator === 0 || isNaN(denominator)) {
+                document.getElementById('resPayback').textContent = '无法计算 (毛利或营收为0)';
+            } else {
+                const payback = (productPrice * deviceUnits) / denominator;
+                document.getElementById('resPayback').textContent = payback.toFixed(1) + ' 月';
+            }
+        }
+
+        // 监听所有输入组件的变动（实现随滑动实时刷新结果）
+        modelSelect.addEventListener('change', calculate);
+        inputs.forEach(id => {
+            elements[id].addEventListener('input', calculate);
+        });
+
+        // 首次运行初始化
+        calculate();
+    </script>
+</body>
+</html>
