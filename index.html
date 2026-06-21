@@ -238,7 +238,7 @@
 
             // 4. 计算回本周期 (Payback Period) - 单位：月
             // 算法公式: (产品价格 * 设备数量) / (月营业额 * 利润率 / 100)
-            const denominator = grossRevenue * (margin / 100);
+            const denominator = round(grossRevenue * (margin / 100),2);
 
             // 防止分母为 0 导致报错（如当利润率或营业额被滑动到 0 时）
             if (denominator === 0 || isNaN(denominator)) {
