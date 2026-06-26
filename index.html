@@ -111,25 +111,13 @@
 
                 <div class="space-y-1.5">
                     <div class="flex justify-between items-baseline">
-                        <span class="text-[10px] font-bold text-[#475569] uppercase tracking-wider">Average item price</span>
-                        <span id="v_itemPrice" class="text-xs font-bold text-[#0f172a]">$3</span>
+                        <span class="text-[10px] font-bold text-[#475569] uppercase tracking-wider">Average Ticket</span>
+                        <span id="v_averageTicket" class="text-xs font-bold text-[#0f172a]">$6</span>
                     </div>
-                    <input type="range" id="itemPrice" min="0" max="15" step="0.5" value="3" class="cursor-pointer">
+                    <input type="range" id="averageTicket" min="0" max="100" step="1" value="6" class="cursor-pointer">
                     <div class="flex justify-between text-[9px] text-[#94a3b8] font-medium px-0.5">
                         <span>$0</span>
-                        <span>$15</span>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <div class="flex justify-between items-baseline">
-                        <span class="text-[10px] font-bold text-[#475569] uppercase tracking-wider">Items per order</span>
-                        <span id="v_itemsPerOrder" class="text-xs font-bold text-[#0f172a]">2</span>
-                    </div>
-                    <input type="range" id="itemsPerOrder" min="0" max="3" step="1" value="2" class="cursor-pointer">
-                    <div class="flex justify-between text-[9px] text-[#94a3b8] font-medium px-0.5">
-                        <span>0</span>
-                        <span>3</span>
+                        <span>$100</span>
                     </div>
                 </div>
 
@@ -214,7 +202,7 @@
             </div>
             <p>
                 <strong class="text-[#334155]">1. Gross Revenue (Monthly) Formula:</strong><br>
-                Gross Revenue = Daily Foot Traffic &times; (Traffic Conversion Rate / 100) &times; Average Item Price &times; Items Per Order &times; 30 Days
+                Gross Revenue = Daily Foot Traffic &times; (Traffic Conversion Rate / 100) &times; Average Ticket &times; 30 Days
             </p>
             <p>
                 <strong class="text-[#334155]">2. Net Profit (Monthly) Formula:</strong><br>
@@ -223,16 +211,13 @@
             <p>
                 <strong class="text-[#334155]">3. Payback Period Formula:</strong><br>
                 Payback Period = (Product Price &times; Device Units) / Net Profit <br>
-                <span class="text-[10px] text-[#94a3b8] block mt-0.5 ml-3">※ AI Recognition Fee = Traffic &times; (Conversion Rate / 100) &times; 0.05 &times; 30 Days &times; Device Units. Fixed overheads scale with units.</span>
+                <span class="text-[10px] text-[#94a3b8] block mt-0.5 ml-3">※ AI Recognition Fee = Traffic &times; (Conversion Rate / 100) &times; 0.05 &times; 30 Days &times; Device Units. Fixed infrastructure elements scale with total physical nodes.</span>
             </p>
         </div>
 
     </div>
 
     <script>
-        // =========================================================================
-        // 【管理员后台产品档案维护区】
-        // =========================================================================
         const productDatabase = {
             "Mini 360":    { price: 2999 },
             "Pluss 440":   { price: 3499 },
@@ -245,9 +230,6 @@
         };
         const defaultProduct = "Mini 360";
 
-        // =========================================================================
-        // 【UI 主框架事件绑定】
-        // =========================================================================
         const modelSelect = document.getElementById('productModel');
         Object.keys(productDatabase).forEach(model => {
             const option = document.createElement('option');
@@ -257,7 +239,7 @@
             modelSelect.appendChild(option);
         });
 
-        const inputs = ['dailyTraffic', 'conversionRate', 'itemPrice', 'itemsPerOrder', 'profitMargin'];
+        const inputs = ['dailyTraffic', 'conversionRate', 'averageTicket', 'profitMargin'];
         const elements = {};
         inputs.forEach(id => elements[id] = document.getElementById(id));
         
@@ -289,26 +271,21 @@
         function updateLabels() {
             document.getElementById('v_dailyTraffic').textContent = elements.dailyTraffic.value;
             document.getElementById('v_conversionRate').textContent = elements.conversionRate.value + '%';
-            document.getElementById('v_itemPrice').textContent = '$' + elements.itemPrice.value;
-            document.getElementById('v_itemsPerOrder').textContent = elements.itemsPerOrder.value;
+            document.getElementById('v_averageTicket').textContent = '$' + elements.averageTicket.value;
             document.getElementById('v_profitMargin').textContent = elements.profitMargin.value + '%';
             inputs.forEach(id => updateSliderTrackBackground(elements[id]));
         }
 
-        // =========================================================================
-        // 【核心财务核算层】
-        // =========================================================================
         function calculate() {
             updateLabels();
 
             const deviceUnits = parseInt(deviceUnitsInput.value) || 1;
             const traffic = parseFloat(elements.dailyTraffic.value);
             const conversion = parseFloat(elements.conversionRate.value); 
-            const itemPrice = parseFloat(elements.itemPrice.value);
-            const itemsPerOrder = parseFloat(elements.itemsPerOrder.value);
+            const averageTicket = parseFloat(elements.averageTicket.value);
             const margin = parseFloat(elements.profitMargin.value);
 
-            const globalGrossRevenue = traffic * (conversion / 100) * itemPrice * itemsPerOrder * 30;
+            const globalGrossRevenue = traffic * (conversion / 100) * averageTicket * 30;
 
             const currentHahaModel = modelSelect.value;
             const hahaProductPrice = productDatabase[currentHahaModel].price;
@@ -321,9 +298,8 @@
             const hahaPlatform = 15 * deviceUnits;
             const hahaData = 15 * deviceUnits;
             const hahaPosRental = 10 * deviceUnits;
-            const hahaTx = 30 * (itemPrice * itemsPerOrder * 0.0595) * traffic * (conversion / 100);
+            const hahaTx = 30 * (averageTicket * 0.0595) * traffic * (conversion / 100);
             
-            // AI Recognition Fee Formula
             const hahaAiRecognition = traffic * (conversion / 100) * 0.05 * 30 * deviceUnits;
 
             document.getElementById('hahaPlatformFee').textContent = '$' + Math.round(hahaPlatform).toLocaleString();
